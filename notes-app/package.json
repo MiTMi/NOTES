@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "start": "npm run build && npx serve -s dist -l 8080",
+    "start": "node server.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "npm run build && firebase deploy",
@@ -23,6 +23,7 @@
     "@tiptap/extension-placeholder": "^2.14.0",
     "@tiptap/react": "^2.14.0",
     "@tiptap/starter-kit": "^2.14.0",
+    "express": "^5.1.0",
     "firebase": "^11.9.1",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.517.0",

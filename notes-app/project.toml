@@ -1,6 +1,10 @@
 [[build.buildpacks]]
 uri = "gcr.io/buildpacks/nodejs"
 
+[[build.buildpacks]]
+uri = "gcr.io/buildpacks/procfile"
+
 [build.env]
 GOOGLE_NODEJS_VERSION = "18"
 NODE_ENV = "production"
+GOOGLE_ENTRYPOINT = "node server.mjs"
