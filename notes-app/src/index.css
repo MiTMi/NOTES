@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-navy-dark dark:via-navy-light dark:to-navy-dark text-gray-900 dark:text-white transition-colors duration-300;
+  }
+  
+  /* Custom gradient text */
+  .gradient-text-multicolor {
+    @apply bg-gradient-to-r from-accent-blue via-accent-purple to-coral-500 bg-clip-text text-transparent;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-coral-500 hover:bg-coral-600 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg shadow-coral-500/25;
+  }
+  
+  .btn-secondary {
+    @apply bg-white dark:bg-navy-light border border-gray-300 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-navy-dark text-gray-700 dark:text-white font-medium py-2 px-6 rounded-lg transition-all duration-200;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 dark:border-white/20 rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-transparent bg-white dark:bg-navy-light text-gray-900 dark:text-white transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-navy-light rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl border border-gray-200 dark:border-white/10;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 dark:bg-navy-light/80 backdrop-blur-sm border border-gray-200 dark:border-white/20 rounded-2xl shadow-xl;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent;
+  }
+  
+  /* 3D card effects */
+  .card-3d {
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+  }
+  
+  .card-3d:hover {
+    transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+  }
+  
+  /* Custom shadow for coral buttons */
+  .shadow-coral {
+    box-shadow: 0 20px 40px -15px rgba(255, 84, 67, 0.5);
+  }
+  
+  .shadow-coral:hover {
+    box-shadow: 0 25px 50px -15px rgba(255, 84, 67, 0.6);
+  }
+}
+
+.editor-content {
+  @apply prose prose-lg dark:prose-invert max-w-none focus:outline-none;
+}
+
+.editor-content h1 {
+  @apply text-3xl font-bold mb-4;
+}
+
+.editor-content h2 {
+  @apply text-2xl font-semibold mb-3;
+}
+
+.editor-content h3 {
+  @apply text-xl font-semibold mb-2;
+}
+
+.editor-content p {
+  @apply mb-4 leading-relaxed;
+}
+
+.editor-content ul,
+.editor-content ol {
+  @apply mb-4 pl-6;
+}
+
+.editor-content li {
+  @apply mb-2;
+}
+
+.editor-content blockquote {
+  @apply border-l-4 border-primary-500 pl-4 italic my-4;
+}
+
+.editor-content code {
+  @apply bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm;
+}
+
+.editor-content pre {
+  @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500 dark:bg-gray-500;
+}
