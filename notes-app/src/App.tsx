@@ -1,37 +1,30 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
-import SignIn from './pages/SignIn'
-import SignUp from './pages/SignUp'
-import Dashboard from './pages/Dashboard'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+import FirebaseSignIn from './pages/FirebaseSignIn'
+import FirebaseSignUp from './pages/FirebaseSignUp'
+import FirebaseDashboard from './pages/FirebaseDashboard'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/FirebaseAuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
-
-function AppRoutes() {
-  const { user, isLoading } = useAuth()
-
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
-
-  return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route 
-        path="/dashboard" 
-        element={user ? <Dashboard /> : <Navigate to="/signin" />} 
-      />
-    </Routes>
-  )
-}
 
 function App() {
   return (
     <ThemeProvider>
       <Router>
         <AuthProvider>
-          <AppRoutes />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/signin" element={<FirebaseSignIn />} />
+            <Route path="/signup" element={<FirebaseSignUp />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <FirebaseDashboard />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
         </AuthProvider>
       </Router>
     </ThemeProvider>

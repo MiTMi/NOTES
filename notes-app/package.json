@@ -7,13 +7,18 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "deploy:firestore": "firebase deploy --only firestore",
+    "deploy:storage": "firebase deploy --only storage"
   },
   "dependencies": {
     "@tiptap/extension-code-block-lowlight": "^2.14.0",
     "@tiptap/extension-placeholder": "^2.14.0",
     "@tiptap/react": "^2.14.0",
     "@tiptap/starter-kit": "^2.14.0",
+    "firebase": "^11.9.1",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.517.0",
     "react": "^19.1.0",
