@@ -11,6 +11,7 @@ interface Note {
   content: string
   createdAt: Date
   updatedAt: Date
+  isPinned?: boolean
 }
 
 const Dashboard = () => {
@@ -115,10 +116,27 @@ const Dashboard = () => {
     }
   }
 
-  const filteredNotes = notes.filter(note =>
-    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const togglePinNote = (noteId: string) => {
+    setNotes(notes.map(note => {
+      if (note.id === noteId) {
+        return { ...note, isPinned: !note.isPinned }
+      }
+      return note
+    }))
+  }
+
+  const filteredNotes = notes
+    .filter(note =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Sort pinned notes first
+      if (a.isPinned && !b.isPinned) return -1
+      if (!a.isPinned && b.isPinned) return 1
+      // Then sort by updated date
+      return b.updatedAt.getTime() - a.updatedAt.getTime()
+    })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-navy-dark dark:via-navy-light dark:to-navy-dark flex">
@@ -181,6 +199,7 @@ const Dashboard = () => {
                     setIsSidebarOpen(false)
                   }}
                   onDelete={() => deleteNote(note.id)}
+                  onTogglePin={() => togglePinNote(note.id)}
                 />
               ))
             )}

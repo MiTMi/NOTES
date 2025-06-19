@@ -104,6 +104,74 @@
   @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto;
 }
 
+/* Syntax highlighting styles */
+.code-block {
+  @apply bg-gray-900 dark:bg-gray-950 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 font-mono text-sm;
+}
+
+.code-block code {
+  @apply bg-transparent p-0 text-inherit;
+}
+
+/* Lowlight/Highlight.js theme */
+.hljs-comment,
+.hljs-quote {
+  @apply text-gray-500;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-addition {
+  @apply text-purple-400;
+}
+
+.hljs-number,
+.hljs-string,
+.hljs-meta .hljs-string,
+.hljs-literal,
+.hljs-doctag,
+.hljs-regexp {
+  @apply text-green-400;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  @apply text-blue-400;
+}
+
+.hljs-attribute,
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-type {
+  @apply text-yellow-400;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-subst,
+.hljs-meta,
+.hljs-link {
+  @apply text-orange-400;
+}
+
+.hljs-built_in,
+.hljs-deletion {
+  @apply text-red-400;
+}
+
+.hljs-emphasis {
+  @apply italic;
+}
+
+.hljs-strong {
+  @apply font-bold;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

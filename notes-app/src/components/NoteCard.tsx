@@ -1,4 +1,4 @@
-import { Trash2, Clock } from 'lucide-react'
+import { Trash2, Clock, Pin } from 'lucide-react'
 
 interface Note {
   id: string
@@ -6,6 +6,7 @@ interface Note {
   content: string
   createdAt: Date
   updatedAt: Date
+  isPinned?: boolean
 }
 
 interface NoteCardProps {
@@ -13,10 +14,11 @@ interface NoteCardProps {
   isActive: boolean
   onClick: () => void
   onDelete: () => void
+  onTogglePin: () => void
 }
 
-const NoteCard = ({ note, isActive, onClick, onDelete }: NoteCardProps) => {
-  const getPreview = (html: string, title: string) => {
+const NoteCard = ({ note, isActive, onClick, onDelete, onTogglePin }: NoteCardProps) => {
+  const getPreview = (html: string) => {
     const temp = document.createElement('div')
     temp.innerHTML = html
     
@@ -59,18 +61,34 @@ const NoteCard = ({ note, isActive, onClick, onDelete }: NoteCardProps) => {
         <h3 className="font-semibold text-gray-900 dark:text-white truncate flex-1">
           {note.title || 'Untitled Note'}
         </h3>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete()
-          }}
-          className="ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1 ml-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onTogglePin()
+            }}
+            className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+              note.isPinned
+                ? 'text-yellow-600 dark:text-yellow-400'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+            title={note.isPinned ? 'Unpin note' : 'Pin note'}
+          >
+            <Pin className={`w-4 h-4 ${note.isPinned ? 'fill-current' : ''}`} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-        {getPreview(note.content, note.title)}
+        {getPreview(note.content)}
       </p>
       <div className="flex items-center text-xs text-gray-500 dark:text-gray-500">
         <Clock className="w-3 h-3 mr-1" />

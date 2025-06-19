@@ -13,21 +13,23 @@ const LandingPage = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-20 max-w-[1400px] mx-auto flex justify-between items-center px-6 lg:px-12 py-6">
-        <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-gradient-to-br from-coral-500 to-coral-600 rounded-2xl shadow-lg shadow-coral-500/25">
-            <PenTool className="w-6 h-6 text-white" />
+      <nav className="relative z-20 px-6 lg:px-12 py-6">
+        <div className="max-w-[1400px] mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-gradient-to-br from-coral-500 to-coral-600 rounded-2xl shadow-lg shadow-coral-500/25">
+              <PenTool className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">NoteFlow</span>
           </div>
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">NoteFlow</span>
-        </div>
-        <div className="flex items-center space-x-4">
-          <ThemeToggle />
-          <Link to="/signin" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors">
-            Sign In
-          </Link>
-          <Link to="/signup" className="bg-coral-500 hover:bg-coral-600 text-white font-semibold py-2.5 px-6 rounded-full shadow-lg shadow-coral-500/25 hover:shadow-xl hover:shadow-coral-500/30 transform hover:-translate-y-0.5 transition-all duration-200">
-            Get Started
-          </Link>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <Link to="/signin" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors">
+              Sign In
+            </Link>
+            <Link to="/signup" className="bg-coral-500 hover:bg-coral-600 text-white font-semibold py-2.5 px-6 rounded-full shadow-lg shadow-coral-500/25 hover:shadow-xl hover:shadow-coral-500/30 transform hover:-translate-y-0.5 transition-all duration-200">
+              Get Started
+            </Link>
+          </div>
         </div>
       </nav>
 

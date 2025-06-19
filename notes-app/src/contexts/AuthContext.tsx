@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   const signOut = () => {
-    const currentUser = user
     localStorage.removeItem('user')
     setUser(null)
     

@@ -1,7 +1,13 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
-import { Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Code } from 'lucide-react'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { common, createLowlight } from 'lowlight'
+import { Bold, Italic, List, ListOrdered, Quote, Heading1, Heading2, Code, FileCode } from 'lucide-react'
+import { useEffect } from 'react'
+
+// Create lowlight instance with common languages
+const lowlight = createLowlight(common)
 
 interface EditorProps {
   content: string
@@ -12,7 +18,15 @@ interface EditorProps {
 const Editor = ({ content, onChange, placeholder = 'Start writing your note...' }: EditorProps) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false, // Disable default code block to use syntax highlighting
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+        HTMLAttributes: {
+          class: 'code-block',
+        },
+      }),
       Placeholder.configure({
         placeholder,
       }),
@@ -27,6 +41,13 @@ const Editor = ({ content, onChange, placeholder = 'Start writing your note...' 
       },
     },
   })
+
+  // Update editor content when the content prop changes (e.g., when switching notes)
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content)
+    }
+  }, [content, editor])
 
   if (!editor) {
     return null
@@ -106,6 +127,13 @@ const Editor = ({ content, onChange, placeholder = 'Start writing your note...' 
           title="Quote"
         >
           <Quote className="w-5 h-5" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          isActive={editor.isActive('codeBlock')}
+          title="Code Block"
+        >
+          <FileCode className="w-5 h-5" />
         </ToolbarButton>
       </div>
       <div className="pt-4">
