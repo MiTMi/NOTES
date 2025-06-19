@@ -1,0 +1,6 @@
+[[build.buildpacks]]
+uri = "gcr.io/buildpacks/nodejs"
+
+[build.env]
+GOOGLE_NODEJS_VERSION = "18"
+NODE_ENV = "production"
