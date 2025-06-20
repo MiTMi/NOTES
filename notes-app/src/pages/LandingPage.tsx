@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { PenTool, ArrowRight, Sparkles, Users, Shield, Zap } from 'lucide-react'
 import ThemeToggle from '../components/ThemeToggle'
+import CountdownTimer from '../components/CountdownTimer'
 
 const LandingPage = () => {
   return (
@@ -269,16 +270,24 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="relative z-10 px-6 lg:px-12 py-12 border-t border-gray-200 dark:border-white/10">
-        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-3 mb-4 md:mb-0">
-            <div className="p-2 bg-gradient-to-br from-coral-500 to-coral-600 rounded-xl">
-              <PenTool className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">NoteFlow</span>
+        <div className="max-w-[1400px] mx-auto">
+          {/* Countdown Timer - Center */}
+          <div className="flex justify-center mb-8">
+            <CountdownTimer />
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            © 2024 NoteFlow. All rights reserved.
-          </p>
+          
+          {/* Footer Content */}
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+              <div className="p-2 bg-gradient-to-br from-coral-500 to-coral-600 rounded-xl">
+                <PenTool className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">NoteFlow</span>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400">
+              © 2024 NoteFlow. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

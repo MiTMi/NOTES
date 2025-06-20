@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, Search, LogOut, PenTool, Menu, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle } from 'lucide-react'
 import { useAuth } from '../contexts/FirebaseAuthContext'
 import ThemeToggle from '../components/ThemeToggle'
 import Editor from '../components/Editor'
@@ -14,6 +14,9 @@ const FirebaseDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'unsaved'>('saved')
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (!currentUser) return
@@ -38,6 +41,15 @@ const FirebaseDashboard = () => {
     return () => unsubscribe()
   }, [currentUser, activeNoteId])
 
+  // Reset save status when switching notes
+  useEffect(() => {
+    setSaveStatus('saved')
+    setHasUnsavedChanges(false)
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+  }, [activeNoteId])
+
   const activeNote = notes.find(note => note.id === activeNoteId)
 
   const createNewNote = async () => {
@@ -58,29 +70,50 @@ const FirebaseDashboard = () => {
   const updateNote = async (content: string) => {
     if (!activeNoteId || !currentUser) return
 
-    setSaving(true)
-    
-    // Extract title from content
-    const temp = document.createElement('div')
-    temp.innerHTML = content
-    
-    temp.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li').forEach(el => {
-      el.insertAdjacentText('afterend', '\n')
-    })
-    
-    const textContent = temp.textContent || temp.innerText || ''
-    const lines = textContent.split(/\r?\n|\r/).filter(line => line.trim())
-    const title = lines[0]?.trim() || 'Untitled Note'
+    // Clear existing save timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
 
-    await saveNote({
-      id: activeNoteId,
-      title: title.substring(0, 50),
-      content,
-      userId: currentUser.uid,
-      isPinned: activeNote?.isPinned
-    })
+    // Mark as unsaved
+    setHasUnsavedChanges(true)
+    setSaveStatus('unsaved')
 
-    setSaving(false)
+    // Debounce save operation
+    saveTimeoutRef.current = setTimeout(async () => {
+      setSaving(true)
+      setSaveStatus('saving')
+      
+      try {
+        // Extract title from content
+        const temp = document.createElement('div')
+        temp.innerHTML = content
+        
+        temp.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li').forEach(el => {
+          el.insertAdjacentText('afterend', '\n')
+        })
+        
+        const textContent = temp.textContent || temp.innerText || ''
+        const lines = textContent.split(/\r?\n|\r/).filter(line => line.trim())
+        const title = lines[0]?.trim() || 'Untitled Note'
+
+        await saveNote({
+          id: activeNoteId,
+          title: title.substring(0, 50),
+          content,
+          userId: currentUser.uid,
+          isPinned: activeNote?.isPinned
+        })
+
+        setSaving(false)
+        setSaveStatus('saved')
+        setHasUnsavedChanges(false)
+      } catch (error) {
+        console.error('Error saving note:', error)
+        setSaving(false)
+        setSaveStatus('error')
+      }
+    }, 1000) // 1 second debounce
   }
 
   const deleteNote = async (noteId: string) => {
@@ -232,8 +265,33 @@ const FirebaseDashboard = () => {
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {activeNote?.title || 'Select a note'}
                 </h1>
-                {saving && (
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Saving...</span>
+                {activeNote && (
+                  <div className="flex items-center space-x-2">
+                    {saveStatus === 'saved' && (
+                      <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                        <Check className="w-4 h-4" />
+                        <span className="text-sm">Saved</span>
+                      </div>
+                    )}
+                    {saveStatus === 'saving' && (
+                      <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+                        <div className="w-4 h-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm">Saving...</span>
+                      </div>
+                    )}
+                    {saveStatus === 'unsaved' && (
+                      <div className="flex items-center space-x-1 text-yellow-600 dark:text-yellow-400">
+                        <div className="w-2 h-2 bg-yellow-600 dark:bg-yellow-400 rounded-full" />
+                        <span className="text-sm">Unsaved changes</span>
+                      </div>
+                    )}
+                    {saveStatus === 'error' && (
+                      <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">Save failed</span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <ThemeToggle />

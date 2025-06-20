@@ -104,9 +104,21 @@
   @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto;
 }
 
+.editor-content img {
+  @apply max-w-full h-auto rounded-lg my-4 shadow-md;
+}
+
+.editor-content img:hover {
+  @apply shadow-lg transition-shadow duration-200;
+}
+
 /* Syntax highlighting styles */
+.code-block-wrapper {
+  @apply my-4;
+}
+
 .code-block {
-  @apply bg-gray-900 dark:bg-gray-950 text-gray-100 p-4 rounded-lg overflow-x-auto my-4 font-mono text-sm;
+  @apply bg-gray-900 dark:bg-gray-950 text-gray-100 p-4 rounded-lg overflow-x-auto font-mono text-sm;
 }
 
 .code-block code {
