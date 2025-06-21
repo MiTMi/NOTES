@@ -19,7 +19,7 @@ const FirebaseSignIn = () => {
 
     try {
       await signIn(email, password)
-      navigate('/dashboard')
+      navigate('/analytics')
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')
     } finally {
@@ -33,7 +33,7 @@ const FirebaseSignIn = () => {
 
     try {
       await signInWithGoogle()
-      navigate('/dashboard')
+      navigate('/analytics')
     } catch (err: any) {
       setError(err.message || 'Failed to sign in with Google')
     } finally {

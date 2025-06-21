@@ -32,7 +32,7 @@ const FirebaseSignUp = () => {
 
     try {
       await signUp(email, password, name)
-      navigate('/dashboard')
+      navigate('/analytics')
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
     } finally {
@@ -46,7 +46,7 @@ const FirebaseSignUp = () => {
 
     try {
       await signInWithGoogle()
-      navigate('/dashboard')
+      navigate('/analytics')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up with Google')
     } finally {

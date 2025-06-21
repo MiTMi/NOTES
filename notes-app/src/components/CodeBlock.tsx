@@ -17,11 +17,11 @@ export const CodeBlock = ({ node }: any) => {
       <div className="relative group">
         <button
           onClick={handleCopy}
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-gray-800 hover:bg-gray-700 rounded-md text-gray-400 hover:text-gray-200"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
           title="Copy code"
         >
           {copied ? (
-            <Check className="w-4 h-4 text-green-400" />
+            <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
           ) : (
             <Copy className="w-4 h-4" />
           )}

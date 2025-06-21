@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle } from 'lucide-react'
+import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle, BarChart3 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/FirebaseAuthContext'
 import ThemeToggle from '../components/ThemeToggle'
 import Editor from '../components/Editor'
@@ -13,9 +14,7 @@ const FirebaseDashboard = () => {
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'unsaved'>('saved')
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -44,7 +43,6 @@ const FirebaseDashboard = () => {
   // Reset save status when switching notes
   useEffect(() => {
     setSaveStatus('saved')
-    setHasUnsavedChanges(false)
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
@@ -76,12 +74,10 @@ const FirebaseDashboard = () => {
     }
 
     // Mark as unsaved
-    setHasUnsavedChanges(true)
     setSaveStatus('unsaved')
 
     // Debounce save operation
     saveTimeoutRef.current = setTimeout(async () => {
-      setSaving(true)
       setSaveStatus('saving')
       
       try {
@@ -105,12 +101,9 @@ const FirebaseDashboard = () => {
           isPinned: activeNote?.isPinned
         })
 
-        setSaving(false)
         setSaveStatus('saved')
-        setHasUnsavedChanges(false)
       } catch (error) {
         console.error('Error saving note:', error)
-        setSaving(false)
         setSaveStatus('error')
       }
     }, 1000) // 1 second debounce
@@ -294,7 +287,16 @@ const FirebaseDashboard = () => {
                   </div>
                 )}
               </div>
-              <ThemeToggle />
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/analytics"
+                  className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                  <span className="hidden sm:inline">Analytics</span>
+                </Link>
+                <ThemeToggle />
+              </div>
             </div>
           </div>
 

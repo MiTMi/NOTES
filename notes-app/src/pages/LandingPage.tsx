@@ -62,9 +62,6 @@ const LandingPage = () => {
                 <span>Start Writing Free</span>
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-gray-700 dark:text-white border-2 border-gray-300 dark:border-white/20 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 hover:border-gray-400 dark:hover:border-white/30 transition-all duration-200">
-                Watch Demo
-              </button>
             </div>
 
           </div>
