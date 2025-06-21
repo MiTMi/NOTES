@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle, BarChart3, Download, FileText, FileJson } from 'lucide-react'
+import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle, BarChart3, Download, FileText, FileJson, FileDown, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/FirebaseAuthContext'
 import ThemeToggle from '../components/ThemeToggle'
@@ -7,6 +7,7 @@ import Editor from '../components/Editor'
 import NoteCard from '../components/NoteCard'
 import DataMigration from '../components/DataMigration'
 import { subscribeToNotes, saveNote, deleteNote as deleteNoteService, togglePinNote as togglePinNoteService, type Note } from '../services/notesService'
+import jsPDF from 'jspdf'
 
 const FirebaseDashboard = () => {
   const { currentUser, signOut } = useAuth()
@@ -121,6 +122,156 @@ const FirebaseDashboard = () => {
     a.download = `${activeNote.title || 'note'}.json`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+
+  const exportAsPDF = () => {
+    if (!activeNote) return
+    
+    try {
+      // Create PDF with text-only content
+      const pdf = new jsPDF('p', 'pt', 'a4')
+      
+      // Set margins
+      const margins = {
+        top: 40,
+        bottom: 40,
+        left: 40,
+        right: 40,
+        width: 515 // A4 width - margins
+      }
+      
+      // Add title
+      pdf.setFontSize(20)
+      pdf.setTextColor(0, 0, 0)
+      pdf.text(activeNote.title || 'Untitled Note', margins.left, margins.top + 20)
+      
+      // Parse HTML content
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = activeNote.content
+      
+      // Convert to formatted text content
+      let yPosition = margins.top + 50
+      const lineHeight = 20
+      const pageHeight = pdf.internal.pageSize.height
+      
+      // Process each element
+      const processNode = (node: Element) => {
+        if (yPosition > pageHeight - margins.bottom) {
+          pdf.addPage()
+          yPosition = margins.top
+        }
+        
+        const tagName = node.tagName?.toLowerCase()
+        
+        if (tagName === 'p' || tagName === 'div') {
+          const text = node.textContent || ''
+          if (text.trim()) {
+            pdf.setFontSize(12)
+            const lines = pdf.splitTextToSize(text, margins.width)
+            lines.forEach((line: string) => {
+              if (yPosition > pageHeight - margins.bottom) {
+                pdf.addPage()
+                yPosition = margins.top
+              }
+              pdf.text(line, margins.left, yPosition)
+              yPosition += lineHeight
+            })
+            yPosition += 10 // Paragraph spacing
+          }
+        } else if (tagName && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+          const text = node.textContent || ''
+          if (text.trim()) {
+            const sizes: { [key: string]: number } = { h1: 18, h2: 16, h3: 14, h4: 12, h5: 12, h6: 12 }
+            pdf.setFontSize(sizes[tagName] || 12)
+            pdf.setFont('helvetica', 'bold')
+            pdf.text(text, margins.left, yPosition)
+            pdf.setFont('helvetica', 'normal')
+            yPosition += lineHeight + 10
+          }
+        } else if (tagName === 'ul' || tagName === 'ol') {
+          node.querySelectorAll('li').forEach((li, index) => {
+            const text = li.textContent || ''
+            if (text.trim()) {
+              if (yPosition > pageHeight - margins.bottom) {
+                pdf.addPage()
+                yPosition = margins.top
+              }
+              const bullet = tagName === 'ul' ? '• ' : `${index + 1}. `
+              pdf.setFontSize(12)
+              const lines = pdf.splitTextToSize(bullet + text, margins.width - 20)
+              lines.forEach((line: string, lineIndex: number) => {
+                if (yPosition > pageHeight - margins.bottom) {
+                  pdf.addPage()
+                  yPosition = margins.top
+                }
+                pdf.text(line, margins.left + (lineIndex === 0 ? 0 : 20), yPosition)
+                yPosition += lineHeight
+              })
+            }
+          })
+          yPosition += 10
+        } else if (tagName === 'pre') {
+          const text = node.textContent || ''
+          if (text.trim()) {
+            pdf.setFontSize(10)
+            pdf.setFont('courier')
+            // Add background for code block
+            const lines = text.split('\n')
+            const blockHeight = lines.length * 15 + 10
+            if (yPosition + blockHeight > pageHeight - margins.bottom) {
+              pdf.addPage()
+              yPosition = margins.top
+            }
+            pdf.setFillColor(245, 245, 245)
+            pdf.rect(margins.left - 5, yPosition - 15, margins.width + 10, blockHeight, 'F')
+            pdf.setTextColor(0, 0, 0)
+            lines.forEach((line: string) => {
+              if (line.length > 80) {
+                line = line.substring(0, 80) + '...'
+              }
+              pdf.text(line, margins.left, yPosition)
+              yPosition += 15
+            })
+            pdf.setFont('helvetica')
+            yPosition += 10
+          }
+        } else if (tagName === 'img') {
+          // Skip images - add placeholder text
+          pdf.setFontSize(10)
+          pdf.setTextColor(128, 128, 128)
+          pdf.text('[Image]', margins.left, yPosition)
+          pdf.setTextColor(0, 0, 0)
+          yPosition += lineHeight + 5
+        }
+        
+        // Process children
+        Array.from(node.children).forEach(child => processNode(child))
+      }
+      
+      // Process all content
+      Array.from(tempDiv.children).forEach(child => processNode(child))
+      
+      // If no children, process as text
+      if (tempDiv.children.length === 0 && tempDiv.textContent) {
+        pdf.setFontSize(12)
+        const lines = pdf.splitTextToSize(tempDiv.textContent, margins.width)
+        lines.forEach((line: string) => {
+          if (yPosition > pageHeight - margins.bottom) {
+            pdf.addPage()
+            yPosition = margins.top
+          }
+          pdf.text(line, margins.left, yPosition)
+          yPosition += lineHeight
+        })
+      }
+      
+      // Save the PDF
+      pdf.save(`${activeNote.title || 'note'}.pdf`)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
   }
 
   const createNewNote = async () => {
@@ -341,13 +492,22 @@ const FirebaseDashboard = () => {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
-                  title="Sign out"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
+                <div className="flex items-center space-x-1">
+                  <Link
+                    to="/settings"
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                    title="Settings"
+                  >
+                    <Settings className="w-5 h-5" />
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+                    title="Sign out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -362,22 +522,100 @@ const FirebaseDashboard = () => {
         )}
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col lg:ml-0">
           {/* Header */}
-          <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-gray-800 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <div className="flex items-center space-x-4">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-gray-800">
+            {/* Mobile Header - Two Rows */}
+            <div className="lg:hidden">
+              {/* First Row: Menu + Title */}
+              <div className="flex items-center gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-coral-500 hover:bg-coral-600 text-white rounded-lg flex-shrink-0 shadow-sm transition-colors"
+                  aria-label="Open notes menu"
+                >
+                  <Menu className="w-5 h-5" />
+                  <span className="text-sm font-semibold">Notes</span>
+                </button>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                    {activeNote?.title || 'Select a note'}
+                  </h1>
+                </div>
+                {activeNote && saveStatus !== 'saved' && (
+                  <div className="flex-shrink-0">
+                    {saveStatus === 'saving' && (
+                      <div className="w-4 h-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin" />
+                    )}
+                    {saveStatus === 'unsaved' && (
+                      <div className="w-2 h-2 bg-yellow-600 dark:bg-yellow-400 rounded-full" />
+                    )}
+                    {saveStatus === 'error' && (
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Second Row: Actions */}
+              <div className="flex items-center justify-end gap-1 px-3 py-2">
+                {activeNote && (
+                  <div className="relative group">
+                    <button
+                      className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      title="Export note"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <button
+                        onClick={exportAsMarkdown}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Export as Markdown</span>
+                      </button>
+                      <button
+                        onClick={exportAsText}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Export as Text</span>
+                      </button>
+                      <button
+                        onClick={exportAsJSON}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                      >
+                        <FileJson className="w-4 h-4" />
+                        <span>Export as JSON</span>
+                      </button>
+                      <button
+                        onClick={exportAsPDF}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left rounded-b-lg"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        <span>Export as PDF</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <Link
+                  to="/analytics"
+                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                </Link>
+                <ThemeToggle />
+              </div>
+            </div>
+
+            {/* Desktop Header - Single Row */}
+            <div className="hidden lg:flex items-center justify-between gap-2 px-6 py-4">
+              <div className="flex-1 min-w-0 mr-2">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white truncate">
                   {activeNote?.title || 'Select a note'}
                 </h1>
                 {activeNote && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 mt-1">
                     {saveStatus === 'saved' && (
                       <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
                         <Check className="w-4 h-4" />
@@ -413,7 +651,7 @@ const FirebaseDashboard = () => {
                       title="Export note"
                     >
                       <Download className="w-5 h-5" />
-                      <span className="hidden sm:inline">Export</span>
+                      <span>Export</span>
                     </button>
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <button
@@ -432,10 +670,17 @@ const FirebaseDashboard = () => {
                       </button>
                       <button
                         onClick={exportAsJSON}
-                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left rounded-b-lg"
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                       >
                         <FileJson className="w-4 h-4" />
                         <span>Export as JSON</span>
+                      </button>
+                      <button
+                        onClick={exportAsPDF}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left rounded-b-lg"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        <span>Export as PDF</span>
                       </button>
                     </div>
                   </div>
@@ -445,7 +690,7 @@ const FirebaseDashboard = () => {
                   className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
                   <BarChart3 className="w-5 h-5" />
-                  <span className="hidden sm:inline">Analytics</span>
+                  <span>Analytics</span>
                 </Link>
                 <ThemeToggle />
               </div>
@@ -453,7 +698,7 @@ const FirebaseDashboard = () => {
           </div>
 
           {/* Editor */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-6">
             {activeNote ? (
               <Editor
                 content={activeNote.content}

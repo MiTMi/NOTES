@@ -4,6 +4,7 @@ import FirebaseSignIn from './pages/FirebaseSignIn'
 import FirebaseSignUp from './pages/FirebaseSignUp'
 import FirebaseDashboard from './pages/FirebaseDashboard'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
+import UserSettings from './pages/UserSettings'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/FirebaseAuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -30,6 +31,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AnalyticsDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <UserSettings />
                 </ProtectedRoute>
               } 
             />

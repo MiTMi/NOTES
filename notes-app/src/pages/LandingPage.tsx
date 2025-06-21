@@ -14,20 +14,20 @@ const LandingPage = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-20 px-6 lg:px-12 py-6">
+      <nav className="relative z-20 px-4 sm:px-6 lg:px-12 py-4 sm:py-6">
         <div className="max-w-[1400px] mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="p-2.5 bg-gradient-to-br from-coral-500 to-coral-600 rounded-2xl shadow-lg shadow-coral-500/25">
-              <PenTool className="w-6 h-6 text-white" />
+              <PenTool className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">NoteFlow</span>
+            <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">NoteFlow</span>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <Link to="/signin" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors">
+            <Link to="/signin" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium transition-colors text-sm sm:text-base">
               Sign In
             </Link>
-            <Link to="/signup" className="bg-coral-500 hover:bg-coral-600 text-white font-semibold py-2.5 px-6 rounded-full shadow-lg shadow-coral-500/25 hover:shadow-xl hover:shadow-coral-500/30 transform hover:-translate-y-0.5 transition-all duration-200">
+            <Link to="/signup" className="bg-coral-500 hover:bg-coral-600 text-white font-semibold py-2 px-4 sm:py-2.5 sm:px-6 rounded-full shadow-lg shadow-coral-500/25 hover:shadow-xl hover:shadow-coral-500/30 transform hover:-translate-y-0.5 transition-all duration-200 text-sm sm:text-base">
               Get Started
             </Link>
           </div>

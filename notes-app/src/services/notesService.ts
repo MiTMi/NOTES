@@ -8,7 +8,8 @@ import {
   orderBy, 
   onSnapshot,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  getDocs
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
@@ -93,4 +94,16 @@ export const togglePinNote = async (noteId: string, isPinned: boolean) => {
     isPinned: !isPinned,
     updatedAt: serverTimestamp()
   }, { merge: true })
+}
+
+// Delete all notes for a user
+export const deleteAllUserNotes = async (userId: string) => {
+  const q = query(
+    collection(db, 'notes'),
+    where('userId', '==', userId)
+  )
+  
+  const snapshot = await getDocs(q)
+  const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref))
+  await Promise.all(deletePromises)
 }

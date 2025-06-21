@@ -134,10 +134,17 @@ const AnalyticsDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
       <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h1>
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/dashboard" 
+                className="flex items-center gap-1.5 px-3 py-2 bg-coral-500 hover:bg-coral-600 text-white rounded-lg shadow-sm transition-colors md:hidden"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="text-sm font-semibold">Notes</span>
+              </Link>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white hidden md:block">Analytics Dashboard</h1>
               <nav className="hidden md:flex space-x-6">
                 <Link to="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                   Notes
@@ -146,26 +153,27 @@ const AnalyticsDashboard = () => {
                   Analytics
                 </Link>
               </nav>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white md:hidden">Analytics</h1>
             </div>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
             <div 
               key={index}
-              className={`rounded-2xl p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
+              className={`rounded-2xl p-4 sm:p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 ${
                 animateNumbers ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                  <stat.icon className={`w-6 h-6 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} />
+                <div className={`p-2 sm:p-3 rounded-lg ${stat.bgColor}`}>
+                  <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} />
                 </div>
                 <span className={`flex items-center text-sm font-medium ${
                   stat.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
@@ -178,8 +186,8 @@ const AnalyticsDashboard = () => {
                   )}
                 </span>
               </div>
-              <h3 className="text-gray-600 dark:text-gray-400 text-sm mb-1">{stat.title}</h3>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              <h3 className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1">{stat.title}</h3>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
             </div>
           ))}
         </div>

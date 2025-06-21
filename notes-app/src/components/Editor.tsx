@@ -129,7 +129,7 @@ const Editor = ({ content, onChange, placeholder = 'Start writing your note...' 
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`p-2 rounded-lg transition-colors ${
+      className={`p-2 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-lg transition-colors ${
         disabled
           ? 'opacity-50 cursor-not-allowed text-gray-400 dark:text-gray-600'
           : isActive
@@ -149,7 +149,7 @@ const Editor = ({ content, onChange, placeholder = 'Start writing your note...' 
         <BubbleMenu 
           editor={editor} 
           tippyOptions={{ duration: 100, placement: 'top' }}
-          className="flex items-center gap-1 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+          className="flex items-center gap-1 p-1 sm:p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-w-[90vw] overflow-x-auto scrollbar-hide"
         >
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -205,7 +205,7 @@ const Editor = ({ content, onChange, placeholder = 'Start writing your note...' 
         </BubbleMenu>
       )}
       
-      <div className="flex items-center gap-1 pb-4 border-b border-gray-200 dark:border-gray-700 flex-wrap">
+      <div className="flex items-center gap-1 pb-4 border-b border-gray-200 dark:border-gray-700 flex-wrap overflow-x-auto scrollbar-hide">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           isActive={editor.isActive('heading', { level: 1 })}
@@ -303,7 +303,7 @@ const Editor = ({ content, onChange, placeholder = 'Start writing your note...' 
       )}
       
       <div 
-        className="pt-4"
+        className="pt-4 min-h-[300px] sm:min-h-[400px]"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
         onDragEnter={(e) => e.preventDefault()}
