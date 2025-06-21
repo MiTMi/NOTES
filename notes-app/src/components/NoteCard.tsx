@@ -1,13 +1,5 @@
 import { Trash2, Clock, Pin } from 'lucide-react'
-
-interface Note {
-  id: string
-  title: string
-  content: string
-  createdAt: Date
-  updatedAt: Date
-  isPinned?: boolean
-}
+import type { Note } from '../services/notesService'
 
 interface NoteCardProps {
   note: Note
@@ -15,9 +7,25 @@ interface NoteCardProps {
   onClick: () => void
   onDelete: () => void
   onTogglePin: () => void
+  onDragStart?: (e: React.DragEvent, note: Note) => void
+  onDragEnd?: (e: React.DragEvent) => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDrop?: (e: React.DragEvent) => void
+  isDraggedOver?: boolean
 }
 
-const NoteCard = ({ note, isActive, onClick, onDelete, onTogglePin }: NoteCardProps) => {
+const NoteCard = ({ 
+  note, 
+  isActive, 
+  onClick, 
+  onDelete, 
+  onTogglePin,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  isDraggedOver
+}: NoteCardProps) => {
   const getPreview = (html: string) => {
     const temp = document.createElement('div')
     temp.innerHTML = html
@@ -54,8 +62,13 @@ const NoteCard = ({ note, isActive, onClick, onDelete, onTogglePin }: NoteCardPr
         isActive
           ? 'bg-primary-50 dark:bg-primary-900/20 border-2 border-primary-500'
           : 'bg-white dark:bg-dark-card hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700'
-      }`}
+      } ${isDraggedOver ? 'border-t-4 border-t-coral-500' : ''} ${!note.isPinned ? 'hover:cursor-move' : ''}`}
       onClick={onClick}
+      draggable={!note.isPinned}
+      onDragStart={onDragStart ? (e) => onDragStart(e, note) : undefined}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="font-semibold text-gray-900 dark:text-white truncate flex-1">

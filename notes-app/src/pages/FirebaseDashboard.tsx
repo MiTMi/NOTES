@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle, BarChart3 } from 'lucide-react'
+import { Plus, Search, LogOut, PenTool, Menu, X, Check, AlertCircle, BarChart3, Download, FileText, FileJson } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/FirebaseAuthContext'
 import ThemeToggle from '../components/ThemeToggle'
@@ -16,6 +16,8 @@ const FirebaseDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | 'unsaved'>('saved')
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [draggedNote, setDraggedNote] = useState<Note | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (!currentUser) return
@@ -49,6 +51,77 @@ const FirebaseDashboard = () => {
   }, [activeNoteId])
 
   const activeNote = notes.find(note => note.id === activeNoteId)
+
+  // Export functions
+  const exportAsMarkdown = () => {
+    if (!activeNote) return
+    
+    const content = activeNote.content
+      .replace(/<h1[^>]*>(.*?)<\/h1>/g, '# $1\n')
+      .replace(/<h2[^>]*>(.*?)<\/h2>/g, '## $1\n')
+      .replace(/<h3[^>]*>(.*?)<\/h3>/g, '### $1\n')
+      .replace(/<strong[^>]*>(.*?)<\/strong>/g, '**$1**')
+      .replace(/<b[^>]*>(.*?)<\/b>/g, '**$1**')
+      .replace(/<em[^>]*>(.*?)<\/em>/g, '*$1*')
+      .replace(/<i[^>]*>(.*?)<\/i>/g, '*$1*')
+      .replace(/<code[^>]*>(.*?)<\/code>/g, '`$1`')
+      .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gs, '```\n$1\n```')
+      .replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gs, '> $1')
+      .replace(/<li[^>]*>(.*?)<\/li>/g, '- $1')
+      .replace(/<p[^>]*>(.*?)<\/p>/g, '$1\n\n')
+      .replace(/<br[^>]*>/g, '\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+    
+    const blob = new Blob([`# ${activeNote.title || 'Untitled'}\n\n${content}`], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${activeNote.title || 'note'}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportAsText = () => {
+    if (!activeNote) return
+    
+    const content = activeNote.content
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .trim()
+    
+    const blob = new Blob([`${activeNote.title || 'Untitled'}\n\n${content}`], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${activeNote.title || 'note'}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportAsJSON = () => {
+    if (!activeNote) return
+    
+    const exportData = {
+      title: activeNote.title,
+      content: activeNote.content,
+      createdAt: activeNote.createdAt,
+      updatedAt: activeNote.updatedAt,
+      isPinned: activeNote.isPinned
+    }
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${activeNote.title || 'note'}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const createNewNote = async () => {
     if (!currentUser) return
@@ -136,6 +209,46 @@ const FirebaseDashboard = () => {
     note.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, note: Note) => {
+    setDraggedNote(note)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragEnd = () => {
+    setDraggedNote(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverIndex(index)
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    
+    if (!draggedNote) return
+    
+    const dragIndex = filteredNotes.findIndex(n => n.id === draggedNote.id)
+    if (dragIndex === dropIndex) return
+    
+    // Create a new array with the reordered notes
+    const reorderedNotes = [...filteredNotes]
+    reorderedNotes.splice(dragIndex, 1)
+    reorderedNotes.splice(dropIndex, 0, draggedNote)
+    
+    // Update the notes state
+    const pinnedNotes = reorderedNotes.filter(n => n.isPinned)
+    const unpinnedNotes = reorderedNotes.filter(n => !n.isPinned)
+    const finalOrder = [...pinnedNotes, ...unpinnedNotes]
+    
+    setNotes(finalOrder)
+    setDraggedNote(null)
+    setDragOverIndex(null)
+  }
+
   return (
     <>
       <DataMigration />
@@ -189,7 +302,7 @@ const FirebaseDashboard = () => {
                   {searchQuery ? 'No notes found' : 'No notes yet. Create your first note!'}
                 </div>
               ) : (
-                filteredNotes.map(note => (
+                filteredNotes.map((note, index) => (
                   <NoteCard
                     key={note.id}
                     note={note}
@@ -200,6 +313,11 @@ const FirebaseDashboard = () => {
                     }}
                     onDelete={() => deleteNote(note.id)}
                     onTogglePin={() => togglePinNote(note.id)}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    isDraggedOver={dragOverIndex === index}
                   />
                 ))
               )}
@@ -287,7 +405,41 @@ const FirebaseDashboard = () => {
                   </div>
                 )}
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                {activeNote && (
+                  <div className="relative group">
+                    <button
+                      className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      title="Export note"
+                    >
+                      <Download className="w-5 h-5" />
+                      <span className="hidden sm:inline">Export</span>
+                    </button>
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <button
+                        onClick={exportAsMarkdown}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Export as Markdown</span>
+                      </button>
+                      <button
+                        onClick={exportAsText}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Export as Text</span>
+                      </button>
+                      <button
+                        onClick={exportAsJSON}
+                        className="w-full flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left rounded-b-lg"
+                      >
+                        <FileJson className="w-4 h-4" />
+                        <span>Export as JSON</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <Link
                   to="/analytics"
                   className="flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
